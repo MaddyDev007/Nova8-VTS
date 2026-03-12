@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { FiEdit, FiTrash2 } from 'react-icons/fi'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { HistoryTable } from '@components/vehicles/HistoryTable'
 import { TripHistoryTable } from '@components/vehicles/TripHistoryTable'
 import { TelemetryTable } from '@components/vehicles/TelemetryTable'
+import { EditVehicleModal } from '@components/vehicles/EditVehicleModal'
 import { VehicleInfoCard } from '@components/vehicles/VehicleInfoCard'
 import { VehicleMap } from '@components/map/VehicleMap'
 import { getAddressFromCoordinates } from '@services/geocodingService'
@@ -13,35 +15,37 @@ type DetailTab = 'trips' | 'telemetry' | 'history'
 
 export function VehicleDetailPage() {
   const { vehicleId = '' } = useParams()
+  const navigate = useNavigate()
 
   const [vehicle, setVehicle] = useState<Vehicle | null>(null)
   const [trips, setTrips] = useState<Trip[]>([])
   const [activeTab, setActiveTab] = useState<DetailTab>('trips')
   const [resolvedAddress, setResolvedAddress] = useState('Resolving address...')
   const [isLoadingVehicle, setIsLoadingVehicle] = useState(true)
+  const [isEditOpen, setIsEditOpen] = useState(false)
 
-  useEffect(() => {
-    const loadVehicle = async () => {
-      if (!vehicleId.trim()) {
-        setVehicle(null)
-        setTrips([])
-        setIsLoadingVehicle(false)
-        return
-      }
-
-      setIsLoadingVehicle(true)
-      const [nextVehicle, nextTrips] = await Promise.all([
-        vehicleService.getVehicleById(vehicleId),
-        vehicleService.getVehicleTrips(vehicleId),
-      ])
-
-      setVehicle(nextVehicle)
-      setTrips(nextTrips)
+  const loadVehicle = useCallback(async () => {
+    if (!vehicleId.trim()) {
+      setVehicle(null)
+      setTrips([])
       setIsLoadingVehicle(false)
+      return
     }
 
-    void loadVehicle()
+    setIsLoadingVehicle(true)
+    const [nextVehicle, nextTrips] = await Promise.all([
+      vehicleService.getVehicleById(vehicleId),
+      vehicleService.getVehicleTrips(vehicleId),
+    ])
+
+    setVehicle(nextVehicle)
+    setTrips(nextTrips)
+    setIsLoadingVehicle(false)
   }, [vehicleId])
+
+  useEffect(() => {
+    void loadVehicle()
+  }, [loadVehicle])
 
   useEffect(() => {
     if (!vehicle) {
@@ -86,6 +90,28 @@ export function VehicleDetailPage() {
             <p className='rounded-lg bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-slate-900 dark:text-[#38bdf8]'>
               ID: {vehicleId || 'N/A'}
             </p>
+            <button
+              type='button'
+              onClick={() => setIsEditOpen(true)}
+              className='inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-blue-600 hover:text-blue-600 dark:border-slate-600 dark:text-slate-100 dark:hover:border-[#38bdf8] dark:hover:text-[#38bdf8]'
+            >
+              <FiEdit size={14} />
+              Edit
+            </button>
+            <button
+              type='button'
+              onClick={async () => {
+                if (!vehicleId) return
+                const confirmed = window.confirm('Are you sure you want to delete this vehicle?')
+                if (!confirmed) return
+                await vehicleService.deleteVehicle(vehicleId)
+                navigate('/vehicles')
+              }}
+              className='inline-flex items-center gap-2 rounded-lg border border-rose-300 px-3 py-1.5 text-sm font-medium text-rose-700 transition hover:border-rose-500 hover:text-rose-600 dark:border-rose-500/60 dark:text-rose-300 dark:hover:border-rose-400 dark:hover:text-rose-200'
+            >
+              <FiTrash2 size={14} />
+              Delete
+            </button>
             <Link
               to='/vehicles'
               className='rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:border-blue-600 hover:text-blue-600 dark:border-slate-600 dark:text-slate-100 dark:hover:border-[#38bdf8] dark:hover:text-[#38bdf8]'
@@ -106,6 +132,7 @@ export function VehicleDetailPage() {
             vehicleName={vehicle.vehicleName}
             registrationNumber={vehicle.registrationNumber}
             status={vehicle.status}
+            vehicleType={vehicle.vehicleType}
             assignedDevice={vehicle.deviceId}
             address={resolvedAddress}
             distanceTravelled={Number(totalDistance)}
@@ -181,6 +208,13 @@ export function VehicleDetailPage() {
           Invalid or unknown vehicle ID: <span className='font-semibold'>{vehicleId || 'N/A'}</span>
         </div>
       )}
+
+      <EditVehicleModal
+        vehicle={vehicle}
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        onSuccess={loadVehicle}
+      />
     </div>
   )
 }

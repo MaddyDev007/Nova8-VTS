@@ -1,4 +1,4 @@
-import { userService } from './userService'
+import { apiClient } from '../api/apiClient'
 
 export type UserRole = 'SUPER_ADMIN' | 'COLLEGE_ADMIN' | 'FLEET_MANAGER' | 'STUDENT'
 
@@ -28,48 +28,7 @@ export interface IAuthService {
   getCurrentUser(): AuthSession | null
 }
 
-type MockUserRecord = AuthUser & { password: string }
-
 const SESSION_STORAGE_KEY = 'vts-auth-session'
-
-const mockUsers: MockUserRecord[] = [
-  {
-    email: 'admin@vts.local',
-    password: 'admin123',
-    role: 'SUPER_ADMIN',
-    name: 'Super Admin',
-    status: 'active',
-  },
-  {
-    email: 'college@vts.local',
-    password: 'admin123',
-    role: 'COLLEGE_ADMIN',
-    name: 'College Admin',
-    status: 'active',
-  },
-  {
-    email: 'fleet@vts.local',
-    password: 'admin123',
-    role: 'FLEET_MANAGER',
-    name: 'Fleet Manager',
-    status: 'active',
-  },
-  {
-    email: 'student@vts.local',
-    password: 'student123',
-    role: 'STUDENT',
-    name: 'Student',
-    status: 'active',
-  },
-]
-
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase()
-}
-
-function makeMockToken(user: AuthUser): string {
-  return `mock-token:${user.role}:${Date.now()}`
-}
 
 function saveSession(session: AuthSession): void {
   localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session))
@@ -103,33 +62,16 @@ function readSession(): AuthSession | null {
   }
 }
 
-class MockAuthService implements IAuthService {
+class AuthService implements IAuthService {
   async login(email: string, password: string): Promise<AuthSession> {
-    const user = mockUsers.find(
-      (candidate) =>
-        candidate.email === normalizeEmail(email) && candidate.password === password,
-    )
-
-    if (!user) {
-      throw new Error('Invalid email or password')
-    }
-
-    const isDisabled = user.status === 'disabled' || (await userService.isUserDisabled(user.email))
-    if (isDisabled) {
-      throw new Error('User account is disabled')
-    }
-
-    const session: AuthSession = {
-      token: makeMockToken(user),
-      role: user.role,
-      name: user.name,
-    }
+    const session = await apiClient.post<AuthSession>('/auth/login', { email, password })
 
     saveSession(session)
     return session
   }
 
   logout(): void {
+    void apiClient.post('/auth/logout').catch(() => null)
     localStorage.removeItem(SESSION_STORAGE_KEY)
   }
 
@@ -138,4 +80,4 @@ class MockAuthService implements IAuthService {
   }
 }
 
-export const authService: IAuthService = new MockAuthService()
+export const authService: IAuthService = new AuthService()

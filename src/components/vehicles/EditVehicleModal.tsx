@@ -74,7 +74,7 @@ export function EditVehicleModal({ vehicle, isOpen, onClose, onSuccess }: EditVe
       await vehicleService.updateVehicle(vehicle.id, {
         vehicleName: vehicleName.trim(),
         vehicleType,
-        deviceId: deviceId.trim() || undefined,
+        deviceId: deviceId.trim(),
         updatedAt: new Date().toISOString(),
       })
 

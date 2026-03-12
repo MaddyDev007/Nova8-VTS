@@ -26,42 +26,6 @@ const initialState: NotificationStoreState = {
   isLoaded: false,
 }
 
-const vehicleSamples = ['VTS Vehicle 1', 'VTS Vehicle 2', 'VTS Vehicle 3', 'VTS Vehicle 4', 'VTS Vehicle 5']
-const locationSamples = [
-  'Sector 21, New Delhi',
-  'Ring Road, New Delhi',
-  'NH 48, Gurgaon',
-  'MG Road, Bengaluru',
-  'Infocity, Hyderabad',
-]
-
-const eventSamples: Array<{ type: Notification['type']; message: string }> = [
-  { type: 'overspeed', message: 'Overspeed alert' },
-  { type: 'geofence_enter', message: 'Vehicle entered geofence' },
-  { type: 'geofence_exit', message: 'Vehicle exited geofence' },
-  { type: 'idling', message: 'Vehicle idling detected' },
-  { type: 'stop', message: 'Vehicle stop detected' },
-]
-
-function randomFromArray<T>(values: T[]): T {
-  return values[Math.floor(Math.random() * values.length)]
-}
-
-function buildMockIncomingNotificationPayload() {
-  const event = randomFromArray(eventSamples)
-  const vehicleName = randomFromArray(vehicleSamples)
-  const vehicleId = `veh-${vehicleSamples.indexOf(vehicleName) + 1}`
-  const location = randomFromArray(locationSamples)
-
-  return {
-    type: event.type,
-    vehicleId,
-    vehicleName,
-    message: `${event.message}: ${vehicleName}`,
-    location,
-  }
-}
-
 function countUnread(notifications: Notification[]): number {
   return notifications.reduce((count, item) => count + (item.read ? 0 : 1), 0)
 }
@@ -79,8 +43,11 @@ export const useNotificationStore = create<NotificationStore>()((set) => ({
   },
 
   addNotification: async (notification) => {
-    const nextNotification =
-      notification ?? (await notificationService.createNotification(buildMockIncomingNotificationPayload()))
+    if (!notification) {
+      return
+    }
+
+    const nextNotification = notification
 
     set((state) => {
       const notifications = [nextNotification, ...state.notifications]

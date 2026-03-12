@@ -11,6 +11,7 @@ type EditDeviceModalProps = {
 }
 
 const IMEI_REGEX = /^\d{15}$/
+const DEVICE_ID_REGEX = /^[A-Z0-9_]{3,32}$/
 
 export function EditDeviceModal({ isOpen, device, onClose, onSuccess }: EditDeviceModalProps) {
   const [deviceId, setDeviceId] = useState('')
@@ -37,8 +38,8 @@ export function EditDeviceModal({ isOpen, device, onClose, onSuccess }: EditDevi
     event.preventDefault()
     setError('')
 
-    if (!deviceId.trim()) {
-      setError('Device ID is required')
+    if (!DEVICE_ID_REGEX.test(deviceId.trim())) {
+      setError('Device ID must be 3-32 chars (A-Z, 0-9, underscore)')
       return
     }
 
@@ -84,7 +85,7 @@ export function EditDeviceModal({ isOpen, device, onClose, onSuccess }: EditDevi
             <label className='mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200'>Device ID</label>
             <input
               value={deviceId}
-              onChange={(event) => setDeviceId(event.target.value)}
+              onChange={(event) => setDeviceId(event.target.value.toUpperCase())}
               className='w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-600 dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-100 dark:focus:border-[#38bdf8]'
             />
           </div>

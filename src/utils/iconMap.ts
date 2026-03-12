@@ -2,6 +2,7 @@ import {
   FiActivity,
   FiArrowRight,
   FiBell,
+  FiCpu,
   FiGrid,
   FiMap,
   FiMapPin,
@@ -26,4 +27,5 @@ export const iconMap: Record<string, IconType> = {
   pause: FiPause,
   square: FiSquare,
   users: FiUsers,
+  cpu: FiCpu,
 }

@@ -1,39 +1,59 @@
+import { useEffect, useState } from 'react'
 import { ProfileInfoCard } from '@components/profile/ProfileInfoCard'
 import { ChangePasswordForm } from '@components/profile/ChangePasswordForm'
 import { PreferencesCard } from '@components/profile/PreferencesCard'
 import type { NotificationPreferences, UserProfile } from '../../types/profile'
-
-const mockProfile: UserProfile = {
-  id: 'user-001',
-  name: 'Super Admin',
-  email: 'admin@vts.local',
-  role: 'SUPER_ADMIN',
-  collegeId: 'COLLEGE_001',
-  timezone: 'Asia/Kolkata',
-}
-
-const mockPreferences: NotificationPreferences = {
-  overspeed: true,
-  idling: true,
-  geofence: true,
-  stop: false,
-  deviceOffline: true,
-}
+import { profileService } from '@services/profileService'
+import { useAuthStore } from '@store/authStore'
 
 export function ProfilePage() {
+  const authUser = useAuthStore((state) => state.user)
+  const authRole = useAuthStore((state) => state.role)
+
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [preferences, setPreferences] = useState<NotificationPreferences | null>(null)
+  const [timezone, setTimezone] = useState('Asia/Kolkata')
+
+  useEffect(() => {
+    const loadPreferences = async () => {
+      const prefs = await profileService.getPreferences()
+      setPreferences(prefs.preferences)
+      setTimezone(prefs.timezone)
+    }
+
+    void loadPreferences()
+  }, [])
+
+  useEffect(() => {
+    if (!authUser && !authRole) return
+
+    setProfile({
+      id: 'current-user',
+      name: authUser?.name ?? 'User',
+      email: '',
+      role: authRole ?? 'STUDENT',
+      collegeId: undefined,
+      timezone,
+    })
+  }, [authUser, authRole, timezone])
+
   const handleSaveProfile = async (nextProfile: UserProfile) => {
-    // TODO: Replace with API call (e.g. PATCH /profile)
-    console.info('Profile updated', nextProfile)
+    await profileService.updateProfile({ name: nextProfile.name })
+    setProfile(nextProfile)
   }
 
   const handleChangePassword = async (payload: { currentPassword: string; newPassword: string }) => {
-    // TODO: Replace with API call (e.g. POST /profile/change-password)
-    console.info('Password updated', payload)
+    await profileService.changePassword(payload)
   }
 
   const handleSavePreferences = async (payload: { timezone: string; preferences: NotificationPreferences }) => {
-    // TODO: Replace with API call (e.g. PATCH /profile/preferences)
-    console.info('Preferences updated', payload)
+    await profileService.updatePreferences(payload)
+    setPreferences(payload.preferences)
+    setTimezone(payload.timezone)
+  }
+
+  if (!profile || !preferences) {
+    return <div className='mx-auto w-full max-w-7xl'>Loading profile...</div>
   }
 
   return (
@@ -43,13 +63,9 @@ export function ProfilePage() {
         <p className='text-sm text-slate-600 dark:text-slate-300'>Manage your account settings and security</p>
       </section>
 
-      <ProfileInfoCard profile={mockProfile} onSave={handleSaveProfile} />
+      <ProfileInfoCard profile={profile} onSave={handleSaveProfile} />
 
-      <PreferencesCard
-        timezone={mockProfile.timezone}
-        preferences={mockPreferences}
-        onSave={handleSavePreferences}
-      />
+      <PreferencesCard timezone={timezone} preferences={preferences} onSave={handleSavePreferences} />
 
       <ChangePasswordForm onSubmit={handleChangePassword} />
     </div>

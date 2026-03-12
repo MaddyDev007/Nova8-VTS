@@ -2,7 +2,7 @@ import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis
 import { useTheme } from '@hooks/useTheme'
 
 type VehicleActivityBarDatum = {
-  label: 'moving' | 'idling' | 'offline' | 'maintenance'
+  label: 'moving' | 'idling' | 'stop' | 'maintenance'
   count: number
 }
 
@@ -13,14 +13,14 @@ type VehicleActivityBarChartProps = {
 const defaultData: VehicleActivityBarDatum[] = [
   { label: 'moving', count: 64 },
   { label: 'idling', count: 22 },
-  { label: 'offline', count: 35 },
+  { label: 'stop', count: 35 },
   { label: 'maintenance', count: 7 },
 ]
 
 const statusColors: Record<VehicleActivityBarDatum['label'], string> = {
   moving: '#22c55e',
   idling: '#eab308',
-  offline: '#ef4444',
+  stop: '#ef4444',
   maintenance: '#64748b',
 }
 

@@ -2,7 +2,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, Legend } from 'recha
 import { useTheme } from '@hooks/useTheme'
 
 type VehicleStatusPieDatum = {
-  name: 'moving' | 'idling' | 'offline' | 'maintenance'
+  name: 'moving' | 'idling' | 'stopped' | 'offline'
   value: number
 }
 
@@ -13,15 +13,15 @@ type VehicleStatusPieChartProps = {
 const defaultData: VehicleStatusPieDatum[] = [
   { name: 'moving', value: 64 },
   { name: 'idling', value: 22 },
+  { name: 'stopped', value: 18 },
   { name: 'offline', value: 35 },
-  { name: 'maintenance', value: 7 },
 ]
 
 const statusColors: Record<VehicleStatusPieDatum['name'], string> = {
   moving: '#22c55e',
   idling: '#eab308',
-  offline: '#ef4444',
-  maintenance: '#64748b',
+  stopped: '#ef4444',
+  offline: '#94a3b8',
 }
 
 export function VehicleStatusPieChart({ data = defaultData }: VehicleStatusPieChartProps) {

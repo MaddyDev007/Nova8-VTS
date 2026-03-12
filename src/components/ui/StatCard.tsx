@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { clsx } from 'clsx'
 
-type StatColor = 'cyan' | 'emerald' | 'amber' | 'rose' | 'violet' | 'blue'
+type StatColor = 'cyan' | 'emerald' | 'amber' | 'rose' | 'violet' | 'blue' | 'slate'
 
 type StatCardProps = {
   title: string
@@ -35,6 +35,10 @@ const colorStyles: Record<StatColor, { accent: string; glow: string }> = {
   blue: {
     accent: 'text-blue-600 dark:text-[#38bdf8]',
     glow: 'bg-blue-500/15 dark:bg-[#38bdf8]/20',
+  },
+  slate: {
+    accent: 'text-slate-600 dark:text-slate-300',
+    glow: 'bg-slate-500/15 dark:bg-slate-400/20',
   },
 }
 

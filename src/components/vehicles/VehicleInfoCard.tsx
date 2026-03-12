@@ -1,11 +1,12 @@
-import { FiClock, FiMapPin, FiRadio, FiSmartphone } from 'react-icons/fi'
+import { FiClock, FiMapPin, FiRadio, FiSmartphone, FiTruck } from 'react-icons/fi'
 import { StatusBadge } from '@components/ui/StatusBadge'
-import type { VehicleStatus } from '../../types/vehicle'
+import type { VehicleStatus, VehicleType } from '../../types/vehicle'
 
 type VehicleInfoCardProps = {
   vehicleName: string
   registrationNumber: string
   status: VehicleStatus
+  vehicleType: VehicleType
   assignedDevice: string
   address: string
   distanceTravelled: number
@@ -16,6 +17,7 @@ export function VehicleInfoCard({
   vehicleName,
   registrationNumber,
   status,
+  vehicleType,
   assignedDevice,
   address,
   distanceTravelled,
@@ -44,6 +46,13 @@ export function VehicleInfoCard({
           <FiRadio className='text-blue-600 dark:text-[#38bdf8]' size={16} />
           <span>
             <span className='font-semibold'>Distance Travelled:</span> {distanceTravelled.toFixed(1)} km
+          </span>
+        </p>
+
+        <p className='inline-flex items-center gap-2'>
+          <FiTruck className='text-blue-600 dark:text-[#38bdf8]' size={16} />
+          <span>
+            <span className='font-semibold'>Vehicle Type:</span> {vehicleType}
           </span>
         </p>
 

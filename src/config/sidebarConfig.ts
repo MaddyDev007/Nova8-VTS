@@ -18,6 +18,11 @@ export const sidebarSections = [
         route: '/vehicles',
       },
       {
+        label: 'Devices',
+        icon: 'cpu',
+        route: '/devices',
+      },
+      {
         label: 'Routes',
         icon: 'route',
         route: '/routes',
@@ -73,7 +78,7 @@ export const sidebarSections = [
         route: '/idling',
       },
       {
-        label: 'Stop Arrivals',
+        label: 'Stop',
         icon: 'square',
         route: '/stop',
       },

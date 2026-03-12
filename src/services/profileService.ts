@@ -1,4 +1,5 @@
 import type { NotificationPreferences } from '../types/profile'
+import { apiClient } from '../api/apiClient'
 
 export type UpdatePreferencesPayload = {
   timezone: string
@@ -10,30 +11,30 @@ type UpdatePreferencesResponse = {
   message: string
 }
 
-let storedPreferences: UpdatePreferencesPayload = {
-  timezone: 'Asia/Kolkata',
-  preferences: {
-    overspeed: true,
-    idling: true,
-    geofence: true,
-    stop: true,
-    deviceOffline: true,
-  },
+export type UpdateProfilePayload = {
+  name?: string
+}
+
+export type ChangePasswordPayload = {
+  currentPassword: string
+  newPassword: string
 }
 
 class ProfileService {
   async updatePreferences(payload: UpdatePreferencesPayload): Promise<UpdatePreferencesResponse> {
-    // TODO: Replace with REST call (e.g. PATCH /profile/preferences)
-    storedPreferences = { ...payload }
-    return {
-      success: true,
-      message: 'Preferences updated successfully',
-    }
+    return apiClient.patch<UpdatePreferencesResponse>('/profile/preferences', payload)
   }
 
   async getPreferences(): Promise<UpdatePreferencesPayload> {
-    // TODO: Replace with REST call (e.g. GET /profile/preferences)
-    return storedPreferences
+    return apiClient.get<UpdatePreferencesPayload>('/profile/preferences')
+  }
+
+  async updateProfile(payload: UpdateProfilePayload): Promise<{ success: true }> {
+    return apiClient.patch<{ success: true }>('/profile', payload)
+  }
+
+  async changePassword(payload: ChangePasswordPayload): Promise<{ success: true }> {
+    return apiClient.post<{ success: true }>('/profile/change-password', payload)
   }
 }
 

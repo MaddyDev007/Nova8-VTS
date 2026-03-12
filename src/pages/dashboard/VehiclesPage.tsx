@@ -1,16 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FiPlus } from 'react-icons/fi'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AddVehicleModal } from '@components/vehicles/AddVehicleModal'
-import { VehicleTable } from '@components/vehicles/VehicleTable'
+import { VehicleCard } from '@components/vehicles/VehicleCard'
 import { vehicleService } from '@services/vehicleService'
 import type { Vehicle, VehicleStatus } from '../../types/vehicle'
+
+const statusOptions: Array<'all' | VehicleStatus> = ['all', 'moving', 'idling', 'offline', 'maintenance']
 
 export function VehiclesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | VehicleStatus>('all')
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   const initialStatusFilter = useMemo<'all' | VehicleStatus>(() => {
     const status = searchParams.get('status')
@@ -22,6 +27,25 @@ export function VehiclesPage() {
     }
     return 'all'
   }, [searchParams])
+
+  useEffect(() => {
+    setStatusFilter(initialStatusFilter)
+  }, [initialStatusFilter])
+
+  const filteredVehicles = useMemo(() => {
+    const query = search.trim().toLowerCase()
+
+    return vehicles.filter((vehicle) => {
+      const matchesSearch =
+        vehicle.vehicleName.toLowerCase().includes(query) ||
+        vehicle.registrationNumber.toLowerCase().includes(query) ||
+        vehicle.address.toLowerCase().includes(query)
+
+      const matchesStatus = statusFilter === 'all' ? true : vehicle.status === statusFilter
+
+      return matchesSearch && matchesStatus
+    })
+  }, [vehicles, search, statusFilter])
 
   const loadVehicles = async () => {
     setIsLoading(true)
@@ -52,6 +76,25 @@ export function VehiclesPage() {
             Add Vehicle
           </button>
         </div>
+        <div className='mt-4 flex flex-col gap-3 md:flex-row md:items-center'>
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder='Search by vehicle, registration, address...'
+            className='w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 md:max-w-sm dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-100 dark:focus:border-[#38bdf8]'
+          />
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value as 'all' | VehicleStatus)}
+            className='w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2 text-sm capitalize text-slate-900 outline-none transition focus:border-blue-500 md:w-56 dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-100 dark:focus:border-[#38bdf8]'
+          >
+            {statusOptions.map((status) => (
+              <option key={status} value={status} className='capitalize'>
+                {status}
+              </option>
+            ))}
+          </select>
+        </div>
       </section>
 
       {isLoading ? (
@@ -59,7 +102,29 @@ export function VehiclesPage() {
           Loading vehicles...
         </div>
       ) : (
-        <VehicleTable vehicles={vehicles} onVehiclesChanged={loadVehicles} initialStatusFilter={initialStatusFilter} />
+        <div className='w-full space-y-4'>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+          {filteredVehicles.map((vehicle) => (
+            <VehicleCard
+              key={vehicle.id}
+              onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+              vehicle={{
+                id: vehicle.id,
+                name: vehicle.vehicleName,
+                speed: vehicle.speed,
+                messageTime: vehicle.lastSeen,
+                geofence: undefined,
+                address: vehicle.address,
+              }}
+            />
+          ))}
+          </div>
+          {filteredVehicles.length === 0 ? (
+            <div className='rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-slate-600 dark:border-slate-600 dark:text-slate-300'>
+              No vehicles match the current status filter.
+            </div>
+          ) : null}
+        </div>
       )}
 
       <AddVehicleModal
