@@ -13,7 +13,7 @@ export const sidebarSections = [
     title: 'Fleet',
     items: [
       {
-        label: 'Vehicles',
+        label: 'Vehicles Status',
         icon: 'car',
         route: '/vehicles',
       },

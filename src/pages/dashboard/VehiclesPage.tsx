@@ -63,8 +63,8 @@ export function VehiclesPage() {
       <section className='rounded-2xl border border-white/30 bg-white/55 p-4 shadow-lg shadow-slate-900/5 backdrop-blur-xl dark:border-slate-700/70 dark:bg-[#1e293b]/70 dark:shadow-black/20'>
         <div className='flex items-center justify-between gap-3'>
           <div>
-            <h2 className='text-lg font-semibold text-slate-900 dark:text-slate-100'>Vehicles</h2>
-            <p className='text-sm text-slate-600 dark:text-slate-300'>Manage fleet vehicles and device assignments</p>
+            <h2 className='text-lg font-semibold text-slate-900 dark:text-slate-100'>Vehicles Status</h2>
+            <p className='text-sm text-slate-600 dark:text-slate-300'>Real-time status updates from connected vehicle devices.</p>
           </div>
 
           <button
